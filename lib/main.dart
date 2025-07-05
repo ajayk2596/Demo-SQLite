@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await DBHelper.database;
-  await DBHelper.insertData("Vikram");
-  await DBHelper.insertData("Arbind");
+  await DBHelper.insertData("Raman");
   runApp( MyApp());
 }
 class MyApp extends StatelessWidget {
