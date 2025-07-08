@@ -70,5 +70,17 @@ return null;
    }
 }
 
+/// View Data from a table
 
+static Future<List<Map<String, dynamic>>?> viewData() async{
+   Database? db=await database;
+  try{
+    return await db?.query("Students");
+  }
+  catch(e){
+    print("data view errors:$e");
+    return null;
+  }
+
+}
 }

@@ -1,11 +1,11 @@
 import 'package:demo_sqflite/db_helper.dart';
 import 'package:demo_sqflite/home_screen.dart';
+import 'package:demo_sqflite/shimmer_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() async{
+
   WidgetsFlutterBinding.ensureInitialized();
-  await DBHelper.database;
-  await DBHelper.insertData("Raman");
   runApp( MyApp());
 }
 class MyApp extends StatelessWidget {
