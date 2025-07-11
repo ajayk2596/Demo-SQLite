@@ -81,6 +81,35 @@ static Future<List<Map<String, dynamic>>?> viewData() async{
     print("data view errors:$e");
     return null;
   }
+}
+static Future<void> deleteData(int id)async{
+   Database? db=await database;
+   try{
+     if(db!=null){
+       db.delete("Students",where: "id=?",whereArgs: [id]);
+     }
+     else{
+       print("id is null");
+     }
+   }
+   catch(e){
+    print("errors:$e") ;
+   }
 
+}
+
+static Future<void> updateData(int id, String newName)async{
+  Database? db=await database;
+  try{
+    if(db!=null){
+      await db.update("Students", {"name":newName},where: "id=?",whereArgs: [id]);
+    }
+    else{
+      print("id id null");
+    }
+  }
+  catch(e){
+    print("update errors:$e");
+  }
 }
 }
