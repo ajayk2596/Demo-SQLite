@@ -1,6 +1,8 @@
-import 'package:demo_sqflite/db_helper.dart';
+import 'package:demo_sqflite/database/database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'DataModel.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   TextEditingController nameController = TextEditingController();
   TextEditingController updateNameController = TextEditingController();
-  List<Map<String, dynamic>> studentList = [];
+  List<DataModel> studentList = [];
 
   @override
   void initState() {
@@ -21,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> fetchStudents() async {
-    final data = await DBHelper.viewData();
+    final data = await DatabaseHelper.viewData();
     if (data != null) {
       setState(() {
         studentList = data;
@@ -31,11 +33,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> addStudent() async {
     if (nameController.text.trim().isEmpty) return;
-    await DBHelper.insertData(nameController.text.trim());
+    final newStudent = DataModel(
+      id: null,
+      name: nameController.text.trim(),
+      image: '', // Default empty image, adjust as needed
+    );
+    await DatabaseHelper.insertData(newStudent);
     nameController.clear();
     await fetchStudents();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -63,61 +69,75 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: studentList.length,
                 itemBuilder: (context, index) {
                   final student = studentList[index];
-                  final int id = student['id'];
-                  final String name = student['name'];
-
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     child: ListTile(
-                      leading: CircleAvatar(child: Text(id.toString())),
-                      title: Text(name),
+                      leading: CircleAvatar(child: Text(student.id?.toString() ?? '')),
+                      title: Text(student.name),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
                             icon: Icon(Icons.edit, color: Colors.blue),
-                            onPressed: ()async {
-                              var data=studentList[index];
-                              updateNameController.text = data['name'];
-                                String updatedName = updateNameController.text.trim();
-                                if(updatedName.isNotEmpty){
-                                  await DBHelper.updateData(id, name);
-                                  await fetchStudents();
-                                }
-
-                              showDialog(context: context, builder: (context) {
-                                return AlertDialog(
-                                  title: Column(
-                                    children: [
-                                      TextField(
-                                        controller: updateNameController,
-                                        decoration: InputDecoration(
-                                          labelText: "Enter Your Name",
-                                          border: OutlineInputBorder()
-                                        ),
+                            onPressed: () async {
+                              updateNameController.text = student.name;
+                              final id = student.id;
+                              if (id != null) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: Text("Update Student"),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          TextField(
+                                            controller: updateNameController,
+                                            decoration: InputDecoration(
+                                              labelText: "Enter New Name",
+                                              border: OutlineInputBorder(),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      MaterialButton(onPressed: ()async{
-                                        await DBHelper.updateData(id, updateNameController.text);
-                                        await fetchStudents();
-                                        Navigator.pop(context);
-                                        HapticFeedback.vibrate();
-                                      },child: Text("Update Data"),
-                                      height: 50, minWidth: 150, color: Colors.teal,
-                                      )
-                                    ],
-                                  ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text("Cancel"),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () async {
+                                            if (updateNameController.text.trim().isNotEmpty) {
+                                              final updatedModel = DataModel(
+                                                id: id,
+                                                name: updateNameController.text.trim(),
+                                                image: student.image, // Retain old image or update as needed
+                                              );
+                                              await DatabaseHelper.updateData(id, updatedModel);
+                                              await fetchStudents();
+                                              Navigator.pop(context);
+                                              HapticFeedback.vibrate();
+                                            }
+                                          },
+                                          child: Text("Update"),
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 );
-                              },
-                              );
-
+                              }
                             },
                           ),
                           IconButton(
-                            icon: Icon(Icons.delete, color:Colors.red),
+                            icon: Icon(Icons.delete, color: Colors.red),
                             onPressed: () async {
-                              final id=studentList[index]['id'];
-                             await DBHelper.deleteData(id);
-                             await fetchStudents();
+                              final id = student.id;
+                              if (id != null) {
+                                await DatabaseHelper.deleteData(id);
+                                await fetchStudents();
+                              }
                             },
                           ),
                         ],
