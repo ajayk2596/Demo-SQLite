@@ -1,6 +1,11 @@
 void main(){
-  List<Map<String,dynamic>> list=[{"id":1,"name":"Raman"}];
-  print(list[0]['id']);
-  print(list[0]['name']);
+
+  my((a,b)=>print("Raman"));
 
 }
+
+
+my(void Function(String,int) d){
+d("Raman",34);
+}
+
