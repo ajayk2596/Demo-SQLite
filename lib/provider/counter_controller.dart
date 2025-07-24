@@ -8,8 +8,6 @@ class CounterController  with ChangeNotifier{
     notifyListeners();
   }
 
-
-
   decrement(){
     if(counter>0){
       counter--;
